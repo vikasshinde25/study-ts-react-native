@@ -22,7 +22,7 @@
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [".ts", ".tsx"]
+        "extensions": [".js", ".ts", ".tsx"]
       }
     ],
     "react/jsx-props-no-spreading": "off",
