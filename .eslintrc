@@ -5,8 +5,7 @@
     "airbnb/hooks",
     "airbnb-typescript",
     "plugin:import/typescript",
-    "plugin:prettier/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -15,7 +14,7 @@
     },
     "ecmaVersion": 2020,
     "sourceType": "module",
-    "project": ["./tsconfig.json"]
+    "project": ["./tsconfig.json", "./babel.config.json"]
   },
   "plugins": ["react", "@typescript-eslint", "prettier"],
   "rules": {

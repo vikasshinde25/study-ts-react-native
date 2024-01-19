@@ -17,5 +17,11 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "**/*.ts", "**/*.tsx", "react-native.config.js"]
+  "include": [
+    "src",
+    "**/*.ts",
+    "**/*.tsx",
+    "react-native.config.js",
+    "babel.config.js"
+  ]
 }

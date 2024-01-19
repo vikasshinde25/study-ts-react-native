@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { SafeAreaView, View } from "react-native";
 
+import { SafeAreaView } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+import Theme from "../../style/Theme";
 import { RootStackParamList } from "../../types";
+import { TouchableButton } from "../../common";
 import {
-  AuthStyle,
   AuthContainer,
   InputFieldLabel,
   InputField,
+  InputFieldView,
   // ButtonContainer,
 } from "./AuthStyle";
-import { TouchableButton } from "../../common";
+import userLogin from "../../store/services/UserServices";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,7 +28,11 @@ function Login({ navigation }: LoginProps) {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const onPressLogin = () => {
-    navigation.navigate("Home");
+    userLogin({ email: userEmail, password: userPassword }).then((response) => {
+      if (response?.status === 200) {
+        navigation.navigate("Home");
+      }
+    });
   };
   const onPressForgotPassword = () => {
     navigation.navigate("ForgotPassword");
@@ -38,29 +45,29 @@ function Login({ navigation }: LoginProps) {
   return (
     <SafeAreaView>
       <AuthContainer>
-        <View style={AuthStyle.inputView}>
+        <InputFieldView>
           <InputFieldLabel>Email</InputFieldLabel>
           <InputField
-            style={AuthStyle.inputField}
             placeholder="Please enter your email"
+            placeholderTextColor={Theme.gray99}
             value={userEmail}
             onChangeText={(event) => {
               setUserEmail(event);
             }}
           />
-        </View>
-        <View style={AuthStyle.inputView}>
+        </InputFieldView>
+        <InputFieldView>
           <InputFieldLabel>Password</InputFieldLabel>
           <InputField
-            style={AuthStyle.inputField}
             secureTextEntry
             placeholder="Please enter your password"
+            placeholderTextColor={Theme.gray99}
             value={userPassword}
             onChangeText={(event) => {
               setUserPassword(event);
             }}
           />
-        </View>
+        </InputFieldView>
         <TouchableButton
           buttonText="Login"
           buttonType="primary"
@@ -73,10 +80,9 @@ function Login({ navigation }: LoginProps) {
           onPress={onPressForgotPassword}
           customStyle={{ marginTop: 15 }}
         />
-
         <TouchableButton
           buttonText="Do not have an account? Sign Up"
-          buttonType="textBtn"
+          buttonType="textBtn-gray"
           onPress={onPressSignUp}
           customStyle={{ marginTop: 0 }}
         />

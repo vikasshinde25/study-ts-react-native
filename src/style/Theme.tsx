@@ -48,7 +48,8 @@ const Theme = {
   big: "48px",
 
   /* ********** Font family ********** */
-  baseFontFamily: "Roboto_500Medium",
+  baseFontFamily: "Roboto_400Regular",
+  baseMediumFontFamily: "Roboto_500Medium",
 
   /* Box Shadow */
   commonShadow: "0 10px 20px 0 rgba(46, 91, 255, 0.07)",
