@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { SafeAreaView } from "react-native";
+import { useDispatch } from "react-redux";
+import { SafeAreaView, View } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import Theme from "../../style/Theme";
+import { AppDispatch } from "../../redux/store";
 import { RootStackParamList } from "../../types";
-import { TouchableButton } from "../../common";
+import { ErrorBox, TouchableButton } from "../../common";
+import { userLogin } from "../../redux/services/UserServices";
 import {
   AuthContainer,
   InputFieldLabel,
@@ -13,7 +16,6 @@ import {
   InputFieldView,
   // ButtonContainer,
 } from "./AuthStyle";
-import userLogin from "../../store/services/UserServices";
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,14 +27,54 @@ type LoginProps = {
 };
 
 function Login({ navigation }: LoginProps) {
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-  const onPressLogin = () => {
-    userLogin({ email: userEmail, password: userPassword }).then((response) => {
-      if (response?.status === 200) {
-        navigation.navigate("Home");
+  const dispatch = useDispatch<AppDispatch>();
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [loginloader, setLoginLoader] = useState(false);
+
+  // handle login events
+  const handleLoginDetails = (value: string, type: string) => {
+    setLoginData({ ...loginData, [type]: value });
+  };
+
+  // handle use login events
+  const handleUserLoginEvents = () => {
+    setLoginLoader(true);
+
+    // email validation
+    const emailRegex =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const isEmailValid = !(
+      !loginData?.email || emailRegex.test(loginData?.email) === false
+    );
+
+    // password validation
+    const isPasswordValid = loginData?.password?.length >= 8;
+
+    if (isEmailValid && isPasswordValid) {
+      dispatch(userLogin(loginData))
+        .unwrap()
+        .then(() => {
+          navigation.navigate("Home");
+          setLoginLoader(false);
+        })
+        .catch(
+          (error: {
+            data: { non_field_errors: React.SetStateAction<string>[] };
+          }) => {
+            setLoginError(error?.data?.non_field_errors?.[0]);
+            setLoginLoader(false);
+          }
+        );
+    } else {
+      if (!isPasswordValid) {
+        setLoginError("Password should have at least 8 characters...");
+      } else {
+        setLoginError("Oops!... Invalid Credentials.");
       }
-    });
+
+      setLoginLoader(false);
+    }
   };
   const onPressForgotPassword = () => {
     navigation.navigate("ForgotPassword");
@@ -42,18 +84,20 @@ function Login({ navigation }: LoginProps) {
     // Do something about signup operation
   };
 
+  /* ********** Main return statement of this component ********** */
   return (
     <SafeAreaView>
       <AuthContainer>
+        <InputFieldLabel>vshinde@buyboxexperts.com</InputFieldLabel>
+        <InputFieldLabel>vikas@123</InputFieldLabel>
         <InputFieldView>
           <InputFieldLabel>Email</InputFieldLabel>
           <InputField
             placeholder="Please enter your email"
             placeholderTextColor={Theme.gray99}
-            value={userEmail}
-            onChangeText={(event) => {
-              setUserEmail(event);
-            }}
+            value={loginData?.email}
+            autoComplete="email"
+            onChangeText={(value) => handleLoginDetails(value, "email")}
           />
         </InputFieldView>
         <InputFieldView>
@@ -62,18 +106,21 @@ function Login({ navigation }: LoginProps) {
             secureTextEntry
             placeholder="Please enter your password"
             placeholderTextColor={Theme.gray99}
-            value={userPassword}
-            onChangeText={(event) => {
-              setUserPassword(event);
-            }}
+            value={loginData?.password}
+            onChangeText={(value) => handleLoginDetails(value, "password")}
           />
         </InputFieldView>
         <TouchableButton
-          buttonText="Login"
+          buttonText={loginloader ? "Loding....." : "Submit"}
           buttonType="primary"
-          onPress={onPressLogin}
+          onPress={handleUserLoginEvents}
           customStyle={{ marginTop: 0 }}
         />
+        {loginError?.length > 0 ? (
+          <View>
+            <ErrorBox message={loginError} />
+          </View>
+        ) : null}
         <TouchableButton
           buttonText="Forgot Password"
           buttonType="transparent"

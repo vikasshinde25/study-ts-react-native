@@ -11,6 +11,8 @@ import {
 
 import AppNavigator from "./src/navigation/AppNavigator";
 import Theme from "./src/style/Theme";
+import { Provider } from "react-redux";
+import { store } from "./src/redux/store";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -23,8 +25,10 @@ export default function App() {
     return <AppLoading />;
   }
   return (
-    <ThemeProvider theme={Theme}>
-      <AppNavigator />
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={Theme}>
+        <AppNavigator />
+      </ThemeProvider>
+    </Provider>
   );
 }

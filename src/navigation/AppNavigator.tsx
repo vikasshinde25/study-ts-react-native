@@ -1,22 +1,94 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
+import { Platform } from "react-native";
+import { useDispatch } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { ForgotPassword, Login } from "../components/Authentication";
-import Home from "../components/Dashboard/Home";
+import Theme from "../style/Theme";
+import BottomTabNavigator from "./BottomTabNavigator";
+import { AppDispatch } from "../redux/store";
 import { RootStackParamList } from "../types";
-import Matches from "../components/Dashboard/Matches";
+import { userMe } from "../redux/services/UserServices";
+import { ForgotPassword, Login } from "../components/Authentication";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // get token from async storage
+  const getTokenFromAsynStorage = useCallback(async () => {
+    const token = await AsyncStorage.getItem("token");
+    return token;
+  }, []);
+
+  // use effect
+  useEffect(() => {
+    dispatch(userMe());
+    let token = null;
+    if (Platform.OS === "web") {
+      token = localStorage.getItem("token");
+    } else {
+      token = getTokenFromAsynStorage();
+    }
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [getTokenFromAsynStorage]);
+
+  /* ********** Main return statement of this component ********** */
   return (
     <NavigationContainer>
       <RootStack.Navigator initialRouteName="Login">
-        <RootStack.Screen name="Login" component={Login} />
-        <RootStack.Screen name="Home" component={Home} />
-        <RootStack.Screen name="Matches" component={Matches} />
+        {isLoggedIn ? (
+          // Screens for logged in users
+          <>
+            <RootStack.Screen
+              name="BottomTabNavigator"
+              component={BottomTabNavigator}
+              options={{ headerShown: false }}
+            />
+
+            {/* <RootStack.Screen
+              name="Home"
+              component={Home}
+              options={{ title: "Home" }}
+            />
+            <RootStack.Screen
+              name="Matches"
+              component={Matches}
+              options={{ title: "Matches" }}
+            />
+            <RootStack.Screen
+              name="News"
+              component={News}
+              options={{ title: "News" }}
+            />
+            <RootStack.Screen
+              name="More"
+              component={More}
+              options={{ title: "More" }}
+            /> */}
+          </>
+        ) : (
+          // Auth screens
+          <RootStack.Screen
+            name="Login"
+            component={Login}
+            options={{
+              title: "Login",
+              headerStyle: {
+                backgroundColor: Theme.baseColor,
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+        )}
         <RootStack.Screen
           name="ForgotPassword"
           component={ForgotPassword}

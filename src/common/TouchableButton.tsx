@@ -34,12 +34,11 @@ const ButtonStyle = styled.Pressable<ButtonStyleProps>`
   font-family: ${Theme.baseFontFamily};
   font-size: ${Theme.regular};
   color: ${Theme.black};
-  font-weight: 500;
-  width: 100%;
   border-radius: 5px;
   text-align: center;
   min-height: 40px;
   border: 1px solid;
+  width: fit-content;
 
   border-color: ${(props) => {
     switch (props.buttonType) {
@@ -74,6 +73,8 @@ const ButtonLabelStyle = styled.Text<ButtonLabelStyleProps>`
   color: ${(props) => {
     switch (props.buttonType) {
       case "primary":
+        return Theme.white;
+      case "textBtn-white":
         return Theme.white;
       case "textBtn-gray":
         return Theme.gray99;
