@@ -92,13 +92,9 @@ export const userLogout = createAsyncThunk("user/logout", async () => {
   return axiosInstance
     .post(API_LOGOUT, {})
     .then((response) => {
-      if (response?.status === 204) {
-        handleDeleteStorageActivity();
+      handleDeleteStorageActivity();
 
-        // window.location.href = PATH_LOGIN;
-        return response;
-      }
-
+      // window.location.href = PATH_LOGIN;
       return response;
     })
     .catch((error) => {

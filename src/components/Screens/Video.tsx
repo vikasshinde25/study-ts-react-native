@@ -1,13 +1,10 @@
 /* ********** React imports ********** */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 /* ********** Third party imports ********** */
-import { useDispatch } from "react-redux";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
-  Button,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -20,26 +17,19 @@ import Theme from "../../style/Theme";
 import { RootStackParamList } from "../../types";
 import { TouchableButton } from "../../common";
 
-/* ********** Redux store imports ********** */
-import { userMe } from "../../redux/services/UserServices";
-import { AppDispatch } from "../../redux/store";
-
 /* ********** Type definations ********** */
-type HomeScreenNavigationProp = NativeStackNavigationProp<
+type VideoScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  "Home"
+  "Video"
 >;
 
-type HomeProps = {
-  navigation: HomeScreenNavigationProp;
+type VideoProps = {
+  navigation: VideoScreenNavigationProp;
 };
 
 /* ********** MAIN FUNCTION START HERE ********** */
-function Home({ navigation }: HomeProps) {
-  const dispatch = useDispatch<AppDispatch>();
+function Video({ navigation }: VideoProps) {
   const [refreshing, setRefreshing] = useState(false);
-  const [mobileToken, setMobileToken] = useState("");
-  const [webToken, setWebToken] = useState("");
 
   // handeling the page refresh events
   const onRefresh = useCallback(() => {
@@ -47,31 +37,6 @@ function Home({ navigation }: HomeProps) {
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
-  }, []);
-
-  // use effect
-  useEffect(() => {
-    dispatch(userMe());
-    let token = "";
-    if (Platform.OS === "web") {
-      token = localStorage.getItem("token") || "";
-
-      if (token) {
-        setWebToken(token || "");
-      } else {
-        setWebToken("");
-      }
-    } else {
-      AsyncStorage.getItem("token").then((response) => {
-        token = response || "";
-        console.warn("token", token);
-        if (token) {
-          setMobileToken(token);
-        } else {
-          setMobileToken("");
-        }
-      });
-    }
   }, []);
 
   /* ********** Main return statement of this component ********** */
@@ -88,9 +53,8 @@ function Home({ navigation }: HomeProps) {
     >
       {/* <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}> */}
       <View>
-        <Text> Home Screen </Text>
-        <Text> mobileToken is - {mobileToken} </Text>
-        <Text> web token is - {webToken} </Text>
+        <Text> Video Screen </Text>
+
         <TouchableButton
           buttonText="Matches"
           buttonType="primary"
@@ -114,7 +78,7 @@ function Home({ navigation }: HomeProps) {
   );
 }
 
-export default Home;
+export default Video;
 /* ********** MAIN FUNCTION END HERE ********** */
 
 /* ********** Stylesheet ********** */

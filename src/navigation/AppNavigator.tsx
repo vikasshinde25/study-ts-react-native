@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 
 import { Platform } from "react-native";
 import { useDispatch } from "react-redux";
@@ -18,28 +18,47 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 function AppNavigator() {
   const dispatch = useDispatch<AppDispatch>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileToken, setMobileToken] = useState("");
+  const [webToken, setWebToken] = useState("");
 
-  // get token from async storage
-  const getTokenFromAsynStorage = useCallback(async () => {
-    const token = await AsyncStorage.getItem("token");
-    return token;
-  }, []);
+  // // get token from async storage
+  // const getTokenFromAsynStorage = useCallback(async () => {
+  //   const token = await AsyncStorage.getItem("token").then((response) => {
+  //     return response;
+  //   });
+
+  //   return token;
+  // }, []);
 
   // use effect
   useEffect(() => {
     dispatch(userMe());
-    let token = null;
+    let token = "";
     if (Platform.OS === "web") {
-      token = localStorage.getItem("token");
+      token = localStorage.getItem("token") || "";
+      if (token) {
+        setIsLoggedIn(true);
+        setWebToken(token);
+      } else {
+        setIsLoggedIn(false);
+        setWebToken("");
+      }
     } else {
-      token = getTokenFromAsynStorage();
+      AsyncStorage.getItem("token").then((response) => {
+        token = response || "";
+        console.warn("token", token);
+        if (token) {
+          setIsLoggedIn(true);
+          setMobileToken(token);
+        } else {
+          setIsLoggedIn(false);
+          setMobileToken("");
+        }
+      });
     }
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, [getTokenFromAsynStorage]);
+  }, []);
+
+  console.log("isLoggedIn", isLoggedIn);
 
   /* ********** Main return statement of this component ********** */
   return (

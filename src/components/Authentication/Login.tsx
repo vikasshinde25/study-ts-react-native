@@ -55,7 +55,7 @@ function Login({ navigation }: LoginProps) {
       dispatch(userLogin(loginData))
         .unwrap()
         .then(() => {
-          navigation.navigate("Home");
+          navigation.navigate("BottomTabNavigator");
           setLoginLoader(false);
         })
         .catch(

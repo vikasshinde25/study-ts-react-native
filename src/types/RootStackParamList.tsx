@@ -4,6 +4,7 @@ type RootStackParamList = {
   More: undefined;
   News: undefined;
   Login: undefined;
+  Video: undefined;
   ForgotPassword: undefined;
   BottomTabNavigator: undefined;
 };
