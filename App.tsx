@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Provider } from "react-redux";
 import { ThemeProvider } from "styled-components";
 import AppLoading from "expo-app-loading";
 import {
@@ -11,7 +12,6 @@ import {
 
 import AppNavigator from "./src/navigation/AppNavigator";
 import Theme from "./src/style/Theme";
-import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
 
 export default function App() {

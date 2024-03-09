@@ -14,10 +14,10 @@ const customerDetails = createAsyncThunk(
         return response;
       })
       .catch((error) => {
-        const errorMessage = error?.response;
-        return errorMessage;
+        return error?.response;
+        // return thunkAPI.rejectWithValue(error?.response);
       });
-  }
+  },
 );
 
 export default customerDetails;

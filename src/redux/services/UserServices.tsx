@@ -1,15 +1,9 @@
+import { Platform } from "react-native";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import axiosInstance from "../../axios";
-
-import {
-  API_LOGIN,
-  API_LOGOUT,
-  API_USER_ME,
-  PATH_LOGIN,
-} from "../../constants";
-import { Platform } from "react-native";
+import { API_LOGIN, API_LOGOUT, API_USER_ME } from "../../constants";
 
 // store the token in async storage
 const storeTokenInAsync = async (token: string) => {
@@ -18,15 +12,18 @@ const storeTokenInAsync = async (token: string) => {
   } catch (error) {
     return error;
   }
+  return null;
 };
 
 // delete async storage
 const deleteAsyncStorage = async () => {
   try {
     await AsyncStorage.clear();
+    await AsyncStorage.removeItem("token");
   } catch (error) {
     return error;
   }
+  return null;
 };
 
 // handle save storage activity
@@ -55,7 +52,7 @@ export const userLogin = createAsyncThunk(
       email: string;
       password: string;
     },
-    thunkAPI
+    thunkAPI,
   ) => {
     const payloadData = {
       email: loginData?.email,
@@ -72,7 +69,6 @@ export const userLogin = createAsyncThunk(
       .then((response) => {
         if (response?.status === 200) {
           handleSaveStorageActivity(response?.data);
-          return response;
         } else {
           handleDeleteStorageActivity();
         }
@@ -84,7 +80,7 @@ export const userLogin = createAsyncThunk(
         const errorMessage = error?.response;
         return thunkAPI.rejectWithValue(errorMessage);
       });
-  }
+  },
 );
 
 // create async thunk for user logout
@@ -92,14 +88,13 @@ export const userLogout = createAsyncThunk("user/logout", async () => {
   return axiosInstance
     .post(API_LOGOUT, {})
     .then((response) => {
-      handleDeleteStorageActivity();
+      // handleDeleteStorageActivity();
 
       // window.location.href = PATH_LOGIN;
       return response;
     })
     .catch((error) => {
-      const errorMessage = error?.response;
-      return errorMessage;
+      return error?.response;
     });
 });
 
@@ -108,10 +103,9 @@ export const userMe = createAsyncThunk("user/me", async () => {
   return axiosInstance
     .get(API_USER_ME)
     .then((response) => {
-      return response;
+      return response?.data;
     })
     .catch((error) => {
-      const errorMessage = error?.response;
-      return errorMessage;
+      return error?.response;
     });
 });

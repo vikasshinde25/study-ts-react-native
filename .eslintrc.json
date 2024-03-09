@@ -14,25 +14,14 @@
     },
     "ecmaVersion": 2020,
     "sourceType": "module",
-    "project": [
-      "./tsconfig.json",
-      "./babel.config.json"
-    ]
+    "project": ["./tsconfig.json", "./babel.config.json"]
   },
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "prettier"
-  ],
+  "plugins": ["react", "@typescript-eslint", "prettier"],
   "rules": {
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [
-          ".js",
-          ".ts",
-          ".tsx"
-        ]
+        "extensions": [".js", ".ts", ".tsx"]
       }
     ],
     "react/jsx-props-no-spreading": "off",

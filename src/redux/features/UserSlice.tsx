@@ -11,6 +11,7 @@ const UserSlice = createSlice({
   extraReducers: (builder) => {
     // login reducer
     builder.addCase(userLogin.fulfilled, (state, action) => {
+      console.warn("action", action);
       const userState = state;
       userState.isLoggedIn = true;
       userState.userData = action?.payload?.data?.user;
@@ -31,9 +32,17 @@ const UserSlice = createSlice({
     });
     // user me reducer
     builder.addCase(userMe.fulfilled, (state, action) => {
+      // console.warn("action", action);
+
       const userState = state;
       userState.isLoggedIn = true;
       userState.userData = action?.payload?.data;
+      userState.error = null;
+    });
+    builder.addCase(userMe.rejected, (state) => {
+      const userState = state;
+      userState.isLoggedIn = false;
+      userState.userData = null;
       userState.error = null;
     });
   },

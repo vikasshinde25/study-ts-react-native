@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
-import { SafeAreaView, View } from "react-native";
+import { Platform, SafeAreaView, View } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import Theme from "../../style/Theme";
 import { AppDispatch } from "../../redux/store";
 import { RootStackParamList } from "../../types";
 import { ErrorBox, TouchableButton } from "../../common";
-import { userLogin } from "../../redux/services/UserServices";
+import { userLogin, userMe } from "../../redux/services/UserServices";
 import {
   AuthContainer,
   InputFieldLabel,
@@ -32,6 +33,27 @@ function Login({ navigation }: LoginProps) {
   const [loginError, setLoginError] = useState("");
   const [loginloader, setLoginLoader] = useState(false);
 
+  // use effect
+  useEffect(() => {
+    let token = "";
+    if (Platform.OS === "web") {
+      token = localStorage.getItem("token") || "";
+      if (token) {
+        dispatch(userMe());
+        navigation.navigate("BottomTabNavigator");
+      }
+    } else {
+      AsyncStorage.getItem("token").then((response) => {
+        token = response || "";
+        setLoginError(token);
+        if (token) {
+          dispatch(userMe());
+          navigation.navigate("BottomTabNavigator");
+        }
+      });
+    }
+  }, [dispatch, navigation]);
+
   // handle login events
   const handleLoginDetails = (value: string, type: string) => {
     setLoginData({ ...loginData, [type]: value });
@@ -47,13 +69,12 @@ function Login({ navigation }: LoginProps) {
     const isEmailValid = !(
       !loginData?.email || emailRegex.test(loginData?.email) === false
     );
-
+    //  .unwrap()
     // password validation
     const isPasswordValid = loginData?.password?.length >= 8;
 
     if (isEmailValid && isPasswordValid) {
       dispatch(userLogin(loginData))
-        .unwrap()
         .then(() => {
           navigation.navigate("BottomTabNavigator");
           setLoginLoader(false);

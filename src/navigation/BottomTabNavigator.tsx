@@ -1,20 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform, View } from "react-native";
+import { useDispatch } from "react-redux";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import Theme from "../style/Theme";
 import { RootStackParamList } from "../types";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { Home, Matches, More, News, Video } from "../components/Screens";
 import { Icon, TouchableButton } from "../common";
 import { AppDispatch } from "../redux/store";
-import { useDispatch } from "react-redux";
 import { BottomTabConstant } from "../constants";
-import { userLogout } from "../redux/services/UserServices";
+import { userLogout, userMe } from "../redux/services/UserServices";
 
-const Tab = createBottomTabNavigator();
+const BottomTab = createBottomTabNavigator();
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -30,29 +31,138 @@ function BottomTabNavigator({ navigation }: BottomTabNavigatorProps) {
   const [lougOutLoader, setLougOutLoader] = useState(false);
   const [lougOutError, setLogOutError] = useState("");
 
+  // use effect
+  useEffect(() => {
+    let token = "";
+    if (Platform.OS === "web") {
+      token = localStorage.getItem("token") || "";
+      if (token) {
+        dispatch(userMe());
+      } else {
+        navigation.navigate("Login");
+        setLougOutLoader(false);
+        setLogOutError("");
+      }
+    } else {
+      AsyncStorage.getItem("token").then((response) => {
+        token = response || "";
+        if (token) {
+          dispatch(userMe());
+
+          navigation.navigate("Login");
+        } else {
+          navigation.navigate("Login");
+          setLougOutLoader(false);
+          setLogOutError("");
+        }
+      });
+    }
+  }, [dispatch, navigation]);
+  console.log("lougOutError", lougOutError);
+  console.log("lougOutLoader", lougOutLoader);
+
+  // delete async storage
+  const deleteAsyncStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      // await AsyncStorage.removeItem("token");
+      navigation.navigate("Login");
+    } catch (error) {
+      return error;
+    }
+    return null;
+  };
+
+  // handle delete storage activity
+  const handleDeleteStorageActivity = () => {
+    if (Platform.OS === "web") {
+      localStorage.removeItem("token");
+    } else {
+      deleteAsyncStorage();
+    }
+  };
+
   // handle user logout event
   const handleUserLogoutEvents = () => {
     dispatch(userLogout())
       .unwrap()
-      .then(() => {
-        navigation.navigate("Login");
+      .then((response: any) => {
+        console.warn("response", response);
+
+        handleDeleteStorageActivity();
+
         setLougOutLoader(false);
         setLogOutError("");
-      })
-      .catch(
-        (error: {
-          data: { non_field_errors: React.SetStateAction<string>[] };
-        }) => {
-          setLougOutLoader(false);
-          setLogOutError(error?.data?.non_field_errors?.[0]);
-        }
-      );
+      });
+    // .catch(
+    //   (error: {
+    //     data: { non_field_errors: React.SetStateAction<string>[] };
+    //   }) => {
+    //     setLougOutLoader(false);
+    //     setLogOutError(error?.data?.non_field_errors?.[0]);
+    //   }
+    // );
+  };
+
+  // get tab component
+  const getTabComponent = (tabLabel: string) => {
+    switch (tabLabel) {
+      case "Home":
+        return Home;
+      case "Matches":
+        return Matches;
+      case "News":
+        return News;
+      case "Video":
+        return Video;
+      case "More":
+        return More;
+      default:
+        return Home;
+    }
+  };
+
+  // get tab component
+  const getTabIcon = (tabLabel: string) => {
+    switch (tabLabel) {
+      case "Home":
+        return "home";
+      case "Matches":
+        return "cricket";
+      case "News":
+        return "newspaper-variant";
+      case "Video":
+        return "video";
+      case "More":
+        return "dots-grid";
+      default:
+        return "";
+    }
+  };
+
+  const displayTabIcon = (tabLabel: string) => {
+    return (
+      <Icon size="large" color={Theme.white} name={getTabIcon(tabLabel)} />
+    );
+  };
+
+  const displayLogoutbutton = () => {
+    return (
+      <TouchableButton
+        buttonText="Logout"
+        buttonType="textBtn-white"
+        onPress={() => {
+          handleUserLogoutEvents();
+        }}
+        customStyle={{ marginTop: 0 }}
+      />
+    );
   };
 
   /* ********** Main return statement of this component ********** */
   return (
     <View style={{ backgroundColor: Theme.baseColor, flex: 1 }}>
-      <Tab.Navigator
+      <BottomTab.Navigator
         initialRouteName="HomeNavigator"
         screenOptions={{
           tabBarActiveTintColor: Theme.white,
@@ -73,42 +183,12 @@ function BottomTabNavigator({ navigation }: BottomTabNavigatorProps) {
       >
         {BottomTabConstant?.map((item) => {
           return (
-            <Tab.Screen
+            <BottomTab.Screen
               name={item?.tabLabel}
               key={item?.tabLabel}
-              component={
-                item?.tabLabel === "Home"
-                  ? Home
-                  : item?.tabLabel === "Matches"
-                  ? Matches
-                  : item?.tabLabel === "News"
-                  ? News
-                  : item?.tabLabel === "Video"
-                  ? Video
-                  : item?.tabLabel === "More"
-                  ? More
-                  : Home
-              }
+              component={getTabComponent(item?.tabLabel)}
               options={{
-                tabBarIcon: () => (
-                  <Icon
-                    size="large"
-                    color={Theme.white}
-                    name={
-                      item?.tabLabel === "Home"
-                        ? "home"
-                        : item?.tabLabel === "Matches"
-                        ? "cricket"
-                        : item?.tabLabel === "News"
-                        ? "newspaper-variant"
-                        : item?.tabLabel === "Video"
-                        ? "video"
-                        : item?.tabLabel === "More"
-                        ? "dots-grid"
-                        : "home"
-                    }
-                  />
-                ),
+                tabBarIcon: () => displayTabIcon(item?.tabLabel),
 
                 headerStyle: {
                   backgroundColor: Theme.baseColor,
@@ -118,21 +198,12 @@ function BottomTabNavigator({ navigation }: BottomTabNavigatorProps) {
                   fontWeight: "bold",
                 },
 
-                headerRight: () => (
-                  <TouchableButton
-                    buttonText="Logout"
-                    buttonType="textBtn-white"
-                    onPress={() => {
-                      handleUserLogoutEvents();
-                    }}
-                    customStyle={{ marginTop: 0 }}
-                  />
-                ),
+                headerRight: () => displayLogoutbutton(),
               }}
             />
           );
         })}
-      </Tab.Navigator>
+      </BottomTab.Navigator>
     </View>
   );
 }
